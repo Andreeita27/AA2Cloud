@@ -2,15 +2,15 @@ name: CI/CD Frontend
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ] #Se ejecuta cuando hay un push en la rama main
 
-jobs:
+jobs: #Tareas automaticas
   build:
     name: Build Docker image and push to repositories
     runs-on: ubuntu-latest
 
     steps:
-    # Paso 1 - Descarga el código del repositorio
+    # Paso 1 - Descarga el código del repositorio a la maquina virtual
     - name: Checkout code
       uses: actions/checkout@v3
 
@@ -18,8 +18,8 @@ jobs:
     - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+        username: ${{ secrets.DOCKER_USERNAME }} #Definido en github
+        password: ${{ secrets.DOCKER_PASSWORD }} #Definido en github
 
     # Paso 3 - Construye la imagen del frontend y la sube a Docker Hub
     # Esto sería la parte de CI
@@ -28,16 +28,20 @@ jobs:
       with:
         context: ./frontend
         push: true
-        tags: afernandez28707/temperaturas-frontend:${{ github.sha }}
+        tags: afernandez28707/temperaturas-frontend:${{ github.sha }} 
+        #Cada commit genera una imagen distinta sin machacar la anterior
 
     # Paso 4 - Se conecta por SSH a la máquina y actualiza la imagen del deployment
     # Esto sería la parte de CD
     - name: Deploy to EKS
       uses: appleboy/ssh-action@v0.1.8
       with:
-        host: ${{ secrets.SSH_HOST }}
-        username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.SSH_PORT }}
+        host: ${{ secrets.SSH_HOST }} #Definido en github / IP publica EC2
+        username: ${{ secrets.SSH_USER }} #Definido en github / usuario EC2
+        key: ${{ secrets.SSH_KEY }} #Definido en github / clave privada SSH
+        port: ${{ secrets.SSH_PORT }} #Definido en github / 22
         script: |
           kubectl set image deployment/temperaturas-frontend temperaturas-frontend=afernandez28707/temperaturas-frontend:${{ github.sha }}
+        #Este comando se ejecuta en la EC2 y le dice a kubernetes:
+        # Cambia la imagen del contenedor temperaturas-frontend del deployment con el mismo nombre por esta nueva
+        #imagen de DockerHub

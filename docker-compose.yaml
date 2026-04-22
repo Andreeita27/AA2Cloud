@@ -4,26 +4,24 @@ services:
   # Servicio del BACKEND
   temperaturas-backend:
     build: 
-      context: ./backend
+      context: ./backend #Construye imagen desde esa carpeta
     container_name: temperaturas-backend
-    restart: always
-    # No es obligatorio exponer el puerto al exterior si solo lo usa el front,
-    # pero lo ponemos para que puedas probarlo tú en el 5000
+    restart: always #Si el contenedor se cae, se reinicia solo
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=development
+      - FLASK_ENV=development #Variable de entorno para Flask: activa modo desarrollo (logs, debug, auto-reload)
+      # Flask: empaqueta una aplicación web ligera escrita en Python (Flask) dentro de un contenedor Docker
 
   # Servicio del FRONTEND
   temperaturas-frontend:
     build: 
-      context: ./frontend
+      context: ./frontend #Construye imagen desde esa carpeta
     container_name: temperaturas-frontend
     restart: always
     ports:
       - "3001:3001"
-    # Aquí está la clave: le decimos dónde está el backend por su nombre de servicio
     environment:
-      - TEMP_SERVER=temperaturas-backend:5000
+      - TEMP_SERVER=temperaturas-backend:5000     #Aqui está la clave: le decimos dónde está el backend por su nombre de servicio
     depends_on:
-      - temperaturas-backend
+      - temperaturas-backend #Arranca el backend antes del frontend

@@ -5,10 +5,10 @@ metadata:
   labels:
     app: frontend-temperaturas
 spec:
-  type: LoadBalancer
+  type: LoadBalancer # Kubernetes desde AWS crea un load balancer y da una URL publcia DNS
   ports:
-    - port: 3001
-  selector:
+    - port: 3001 #Puerto desde el que se accede desde fuera
+  selector: #Conecta el service con los pods
     app: frontend-temperaturas
     tier: frontend
 ---
@@ -19,23 +19,23 @@ metadata:
   labels:
     app: frontend-temperaturas
 spec:
-  selector:
+  selector: #Debe coincidir con template y con service
     matchLabels:
       app: frontend-temperaturas
       tier: frontend
   strategy:
-    type: Recreate
-  template:
-    metadata:
+    type: Recreate #Igual que backend, borra pods antes de crear nuevos
+  template: #Define los pods
+    metadata: #Etiquetas de conexion con el service
       labels:
         app: frontend-temperaturas
         tier: frontend
     spec:
-      containers:
+      containers: #Lista de contenedores
         - name: temperaturas-frontend
-          image: afernandez28707/temperaturas-frontend:latest
+          image: afernandez28707/temperaturas-frontend:latest #Imagen de DcoekrHub con el frontend
           ports:
             - containerPort: 3001
-          env:
+          env: #Esta parte es la que conecta el frontend y el backend
             - name: TEMP_SERVER
               value: "temperaturas-backend:5000"
